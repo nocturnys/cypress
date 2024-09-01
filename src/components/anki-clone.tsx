@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 
 type CardData = {
-  front: string
+  front: string[]
   back: string
 }
 
@@ -37,8 +37,11 @@ const CSVUpload = ({ onDeckCreated }: { onDeckCreated: (deck: DeckData) => void 
         const lines = text.split('\n')
         const cards = lines.map(line => {
           const [front, back] = line.split(',').map(part => part.trim())
-          return { front, back }
-        }).filter(card => card.front && card.back)
+          return { 
+            front: front.split(';').map(f => f.trim()), 
+            back: back // Теперь back - это одно слово
+          }
+        }).filter(card => card.front.length > 0 && card.back)
         const deckName = file.name.replace('.csv', '')
         onDeckCreated({ id: Date.now().toString(), name: deckName, cards })
       }
@@ -89,13 +92,34 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
     onComplete(stats)
   }
 
+  const renderFrontSide = (front: string[]) => {
+    if (front.length === 1) {
+      return <div className="text-4xl font-bold text-center mb-6">{front[0]}</div>
+    } else if (front.length === 2) {
+      return (
+        <div className="flex flex-col items-center mb-6">
+          <div className="text-4xl font-bold text-center">{front[0]}</div>
+          <div className="text-2xl text-gray-600 dark:text-gray-400 mt-2">{front[1]}</div>
+        </div>
+      )
+    } else {
+      return (
+        <div className="flex flex-col items-center mb-6">
+          <div className="text-4xl font-bold text-center">{front[0]}</div>
+          <div className="text-2xl text-gray-600 dark:text-gray-400 mt-2">{front[1]}</div>
+          <div className="text-xl text-gray-500 dark:text-gray-500 mt-1">{front.slice(2).join(', ')}</div>
+        </div>
+      )
+    }
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto dark:bg-gray-800 dark:text-white">
       <CardHeader className="text-center">
         <CardTitle className="text-xl">Карта {currentCardIndex + 1} из {shuffledDeck.length}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="text-4xl font-bold text-center mb-6">{shuffledDeck[currentCardIndex].front}</div>
+        {renderFrontSide(shuffledDeck[currentCardIndex].front)}
         <Input
           value={userAnswer}
           onChange={(e) => setUserAnswer(e.target.value)}
@@ -106,6 +130,11 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
         {message && (
           <div className={`text-lg text-center font-semibold ${message === 'Правильно!' ? 'text-green-500' : 'text-red-500'}`}>
             {message}
+          </div>
+        )}
+        {isAnswerChecked && message === 'Неправильно!' && (
+          <div className="text-lg text-center">
+            Правильный ответ: {shuffledDeck[currentCardIndex].back}
           </div>
         )}
       </CardContent>
@@ -242,7 +271,6 @@ export function AnkiClone() {
     setDecks(prevDecks => {
       const updatedDecks = prevDecks.filter(deck => deck.id !== id);
   
-      // If all decks are removed, clear them from localStorage
       if (updatedDecks.length === 0) {
         localStorage.removeItem('decks');
       } else {
