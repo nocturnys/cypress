@@ -3,22 +3,31 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import Confetti from 'react-confetti'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, Check, ArrowRight, X, Upload, Trash2, Home } from 'lucide-react'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
 
 type CardData = {
   front: string
   back: string
 }
 
+type DeckData = {
+  id: string
+  name: string
+  cards: CardData[]
+}
+
 type DeckStats = {
   correct: number
   incorrect: number
+  remaining: number
 }
 
-const CSVUpload = ({ onDeckCreated }: { onDeckCreated: (deck: CardData[]) => void }) => {
+const CSVUpload = ({ onDeckCreated }: { onDeckCreated: (deck: DeckData) => void }) => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -26,13 +35,12 @@ const CSVUpload = ({ onDeckCreated }: { onDeckCreated: (deck: CardData[]) => voi
       reader.onload = (e) => {
         const text = e.target?.result as string
         const lines = text.split('\n')
-        const deck = lines.map(line => {
-          const parts = line.split(',')
-          const front = parts[0]?.trim() || ''
-          const back = parts[1]?.trim() || ''
+        const cards = lines.map(line => {
+          const [front, back] = line.split(',').map(part => part.trim())
           return { front, back }
         }).filter(card => card.front && card.back)
-        onDeckCreated(deck)
+        const deckName = file.name.replace('.csv', '')
+        onDeckCreated({ id: Date.now().toString(), name: deckName, cards })
       }
       reader.readAsText(file, 'UTF-8')
     }
@@ -50,7 +58,7 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [userAnswer, setUserAnswer] = useState('')
   const [message, setMessage] = useState('')
-  const [stats, setStats] = useState<DeckStats>({ correct: 0, incorrect: 0 })
+  const [stats, setStats] = useState<DeckStats>({ correct: 0, incorrect: 0, remaining: deck.length })
   const [isAnswerChecked, setIsAnswerChecked] = useState(false)
 
   const shuffledDeck = useState(() => [...deck].sort(() => Math.random() - 0.5))[0]
@@ -60,7 +68,8 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
     setMessage(isCorrect ? 'Правильно!' : 'Неправильно')
     setStats(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
-      incorrect: prev.incorrect + (isCorrect ? 0 : 1)
+      incorrect: prev.incorrect + (isCorrect ? 0 : 1),
+      remaining: prev.remaining - 1
     }))
     setIsAnswerChecked(true)
   }
@@ -76,13 +85,17 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
     }
   }
 
+  const handleFinishEarly = () => {
+    onComplete(stats)
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto dark:bg-gray-800 dark:text-white">
-      <CardHeader>
-        <CardTitle>Карта {currentCardIndex + 1} из {shuffledDeck.length}</CardTitle>
+      <CardHeader className="text-center">
+        <CardTitle className="text-xl">Карта {currentCardIndex + 1} из {shuffledDeck.length}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="text-3xl font-bold">{shuffledDeck[currentCardIndex].front}</div>
+        <div className="text-4xl font-bold text-center mb-6">{shuffledDeck[currentCardIndex].front}</div>
         <Input
           value={userAnswer}
           onChange={(e) => setUserAnswer(e.target.value)}
@@ -90,33 +103,85 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
           disabled={isAnswerChecked}
           className="text-lg dark:bg-gray-700 dark:text-white"
         />
-        <div className="space-x-2">
-          <Button onClick={handleSubmit} disabled={isAnswerChecked} className="text-lg p-4">Проверить</Button>
-          <Button onClick={handleNext} disabled={!isAnswerChecked} className="text-lg p-4">Следующая карта</Button>
-        </div>
-        {message && <div className={`text-lg ${message === 'Правильно!' ? 'text-green-500' : 'text-red-500'}`}>{message}</div>}
+        {message && (
+          <div className={`text-lg text-center font-semibold ${message === 'Правильно!' ? 'text-green-500' : 'text-red-500'}`}>
+            {message}
+          </div>
+        )}
       </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button onClick={handleSubmit} disabled={isAnswerChecked} className="flex-1 mr-2">
+          <Check className="mr-2 h-4 w-4" /> Проверить
+        </Button>
+        <Button onClick={handleNext} disabled={!isAnswerChecked} className="flex-1 ml-2">
+          <ArrowRight className="mr-2 h-4 w-4" /> Далее
+        </Button>
+      </CardFooter>
+      <CardFooter className="pt-0">
+        <Button onClick={handleFinishEarly} variant="outline" className="w-full">
+          <X className="mr-2 h-4 w-4" /> Завершить досрочно
+        </Button>
+      </CardFooter>
     </Card>
   )
 }
 
-const StatisticsComponent = ({ stats, onReplay }: { stats: DeckStats, onReplay: () => void }) => (
-  <Card className="w-full max-w-md mx-auto dark:bg-gray-800 dark:text-white">
+const StatisticsComponent = ({ stats, onReplay, onReturnHome }: { stats: DeckStats, onReplay: () => void, onReturnHome: () => void }) => (
+  <Card className="w-full max-w-2xl mx-auto dark:bg-gray-800 dark:text-white">
     <CardHeader>
-      <CardTitle>Статистика</CardTitle>
+      <CardTitle className="text-3xl font-bold text-center">Статистика</CardTitle>
     </CardHeader>
-    <CardContent className="space-y-4">
-      <p className="text-lg">Правильные ответы: {stats.correct}</p>
-      <p className="text-lg">Неправильные ответы: {stats.incorrect}</p>
-      <Button onClick={onReplay} className="text-lg p-4 w-full">Пройти колоду снова</Button>
+    <CardContent className="space-y-6">
+      <p className="text-2xl text-center">Правильные ответы: {stats.correct}</p>
+      <p className="text-2xl text-center">Неправильные ответы: {stats.incorrect}</p>
+      <p className="text-2xl text-center">Осталось карточек: {stats.remaining}</p>
     </CardContent>
+    <CardFooter className="flex flex-col space-y-4">
+      <Button onClick={onReplay} size="lg" className="w-full text-xl">
+        <ArrowRight className="mr-2 h-5 w-5" /> Пройти колоду снова
+      </Button>
+      <Button onClick={onReturnHome} variant="outline" size="lg" className="w-full text-xl">
+        <Home className="mr-2 h-5 w-5" /> Вернуться на главную
+      </Button>
+    </CardFooter>
   </Card>
 )
 
+const DeckList = ({ decks, onSelectDeck, onDeleteDeck }: { decks: DeckData[], onSelectDeck: (deck: DeckData) => void, onDeleteDeck: (id: string) => void }) => (
+  <div className={`grid gap-4 ${decks.length === 1 ? 'justify-center' : ''} ${decks.length > 1 ? 'sm:grid-cols-2' : ''} ${decks.length > 2 ? 'lg:grid-cols-3' : ''}`}>
+    {decks.map((deck) => (
+      <motion.div
+        key={deck.id}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="dark:bg-gray-800 dark:text-white">
+          <CardHeader>
+            <CardTitle>{deck.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{deck.cards.length} карточек</p>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button onClick={() => onSelectDeck(deck)} className="flex-1 mr-2">
+              Начать
+            </Button>
+            <Button onClick={() => onDeleteDeck(deck.id)} variant="destructive" className="flex-shrink-0">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </CardFooter>
+        </Card>
+      </motion.div>
+    ))}
+  </div>
+)
+
 export function AnkiClone() {
-  const [deck, setDeck] = useState<CardData[]>([])
+  const [decks, setDecks] = useState<DeckData[]>([])
+  const [currentDeck, setCurrentDeck] = useState<DeckData | null>(null)
   const [isDeckComplete, setIsDeckComplete] = useState(false)
-  const [stats, setStats] = useState<DeckStats>({ correct: 0, incorrect: 0 })
+  const [stats, setStats] = useState<DeckStats>({ correct: 0, incorrect: 0, remaining: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
 
@@ -124,17 +189,37 @@ export function AnkiClone() {
     const isDark = localStorage.getItem('darkMode') === 'true'
     setIsDarkMode(isDark)
     document.documentElement.classList.toggle('dark', isDark)
+
+    const loadDecks = () => {
+      const savedDecks = localStorage.getItem('decks')
+      if (savedDecks) {
+        try {
+          const parsedDecks = JSON.parse(savedDecks)
+          setDecks(parsedDecks)
+          console.log('Loaded decks:', parsedDecks)
+        } catch (error) {
+          console.error('Error parsing saved decks:', error)
+        }
+      }
+    }
+
+    loadDecks()
   }, [])
 
   useEffect(() => {
-    if (showConfetti) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.marginBottom = '0px';
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.marginBottom = '';
+    const saveDecks = () => {
+      try {
+        localStorage.setItem('decks', JSON.stringify(decks))
+        console.log('Saved decks:', decks)
+      } catch (error) {
+        console.error('Error saving decks:', error)
+      }
     }
-  }, [showConfetti]);
+
+    if (decks.length > 0) {
+      saveDecks()
+    }
+  }, [decks])
 
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode
@@ -143,43 +228,83 @@ export function AnkiClone() {
     document.documentElement.classList.toggle('dark', newDarkMode)
   }
 
-  const handleDeckCreated = (newDeck: CardData[]) => {
-    setDeck(newDeck)
-    setIsDeckComplete(false)
+  const handleDeckCreated = (newDeck: DeckData) => {
+    setDecks(prevDecks => [...prevDecks, newDeck])
   }
+
+  const handleSelectDeck = (deck: DeckData) => {
+    setCurrentDeck(deck)
+    setIsDeckComplete(false)
+    setStats({ correct: 0, incorrect: 0, remaining: deck.cards.length })
+  }
+
+  const handleDeleteDeck = (id: string) => {
+    setDecks(prevDecks => {
+      const updatedDecks = prevDecks.filter(deck => deck.id !== id);
+  
+      // If all decks are removed, clear them from localStorage
+      if (updatedDecks.length === 0) {
+        localStorage.removeItem('decks');
+      } else {
+        localStorage.setItem('decks', JSON.stringify(updatedDecks));
+      }
+  
+      return updatedDecks;
+    });
+  };
 
   const handleDeckComplete = (finalStats: DeckStats) => {
     setStats(finalStats)
     setIsDeckComplete(true)
-    if (finalStats.incorrect === 0) {
+    if (finalStats.incorrect === 0 && finalStats.remaining === 0) {
       setShowConfetti(true)
       setTimeout(() => setShowConfetti(false), 5000)
     }
   }
 
   const handleReplay = () => {
+    if (currentDeck) {
+      setIsDeckComplete(false)
+      setStats({ correct: 0, incorrect: 0, remaining: currentDeck.cards.length })
+    }
+  }
+
+  const handleReturnHome = () => {
+    setCurrentDeck(null)
     setIsDeckComplete(false)
-    setStats({ correct: 0, incorrect: 0 })
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-customDark transition-colors duration-200">
-      <header className="p-4 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-black dark:text-white">cypress</h1>
-        <Button onClick={toggleDarkMode} variant="ghost" size="icon" className="dark:text-white">
-          {isDarkMode ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
+      <header className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+        <Link href="#" onClick={handleReturnHome} className="text-4xl font-bold text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+          cypress
+        </Link>
+        <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white">
+          {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
         </Button>
       </header>
-      <main className="flex-grow flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {deck.length === 0 ? (
-            <CSVUpload onDeckCreated={handleDeckCreated} />
+      <main className="flex-grow flex flex-col items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-7xl mx-auto space-y-8"
+        >
+          {!currentDeck ? (
+            <>
+              <h1 className="text-5xl font-bold text-center mb-12 text-black dark:text-white">Мои колоды</h1>
+              <DeckList decks={decks} onSelectDeck={handleSelectDeck} onDeleteDeck={handleDeleteDeck} />
+              <div className="mt-12">
+                <CSVUpload onDeckCreated={handleDeckCreated} />
+              </div>
+            </>
           ) : isDeckComplete ? (
-            <StatisticsComponent stats={stats} onReplay={handleReplay} />
+            <StatisticsComponent stats={stats} onReplay={handleReplay} onReturnHome={handleReturnHome} />
           ) : (
-            <DeckComponent deck={deck} onComplete={handleDeckComplete} />
+            <DeckComponent deck={currentDeck.cards} onComplete={handleDeckComplete} />
           )}
-        </div>
+        </motion.div>
       </main>
       {showConfetti && <Confetti />}
     </div>
