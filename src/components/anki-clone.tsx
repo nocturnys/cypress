@@ -51,7 +51,7 @@ const CSVUpload = ({ onDeckCreated }: { onDeckCreated: (deck: DeckData) => void 
 
   return (
     <div className="space-y-2 w-full max-w-72 mx-auto">
-      <Label htmlFor="csv-upload" className="text-lg block text-center">Загрузка CSV файла</Label>
+      <Label htmlFor="csv-upload" className="text-lg block text-center tracking-tight">Загрузка CSV файла</Label>
       <Input id="csv-upload" type="file" accept=".csv" onChange={handleFileUpload} className="dark:bg-white dark:text-customDark" />
     </div>
   )
@@ -156,20 +156,20 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
 }
 
 const StatisticsComponent = ({ stats, onReplay, onReturnHome }: { stats: DeckStats, onReplay: () => void, onReturnHome: () => void }) => (
-  <Card className="w-full max-w-2xl mx-auto dark:bg-customDark dark:text-white">
+  <Card className="w-full max-w-md mx-auto dark:bg-customDark dark:text-white">
     <CardHeader>
       <CardTitle className="text-3xl font-extrabold text-center">Статистика</CardTitle>
     </CardHeader>
-    <CardContent>
+    <CardContent >
       <p className="text-sm text-center">Правильные ответы: {stats.correct}</p>
       <p className="text-sm text-center">Неправильные ответы: {stats.incorrect}</p>
       <p className="text-sm text-center">Осталось карточек: {stats.remaining}</p>
     </CardContent>
     <CardFooter className="flex flex-col space-y-4">
-      <Button onClick={onReplay} size="lg" className="w-full text-xl">
+      <Button onClick={onReplay} size="lg" className="w-full text-base">
         <ArrowRight className="mr-2 h-5 w-5" /> Пройти колоду снова
       </Button>
-      <Button onClick={onReturnHome} variant="outline" size="lg" className="w-full text-xl">
+      <Button onClick={onReturnHome} variant="outline" size="lg" className="w-full text-base">
         <Home className="mr-2 h-5 w-5" /> Вернуться на главную
       </Button>
     </CardFooter>
@@ -304,9 +304,9 @@ export function AnkiClone() {
   return (
     
     <div className="min-h-screen flex flex-col bg-white dark:bg-customDark transition-colors duration-200">
-      <header className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <Link href="#" onClick={handleReturnHome} className="text-4xl font-black text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-          cypress
+      <header className="p-6 flex justify-between items-center max-w-3xl mx-auto w-full">
+        <Link href="#" onClick={handleReturnHome} className="tracking-tight text-4xl font-black text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+          <span className='align-top text-2xl'>cy</span>press
         </Link>
         <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white">
           {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
