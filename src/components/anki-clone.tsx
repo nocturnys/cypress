@@ -9,7 +9,6 @@ import Confetti from 'react-confetti'
 import { Moon, Sun, Check, ArrowRight, X, Upload, Trash2, Home } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import Component from './Globe'
 
 type CardData = {
   front: string[]
@@ -316,7 +315,6 @@ export function AnkiClone() {
       </header>
 
       <main className="flex-grow flex flex-col items-center justify-center p-6">
-      {/* <Component /> */}
           {!currentDeck ? (
             <>
               {/* <h1 className="text-5xl font-bold text-center mb-12 text-black dark:text-white">Мои колоды</h1> */}
