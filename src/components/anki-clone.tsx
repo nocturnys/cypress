@@ -116,7 +116,7 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
   return (
     <Card className="w-full max-w-md mx-auto dark:bg-customDark dark:text-white">
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">Карта {currentCardIndex + 1} из {shuffledDeck.length}</CardTitle>
+        <CardTitle className="text-sm text-right">{currentCardIndex + 1} из {shuffledDeck.length}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {renderFrontSide(shuffledDeck[currentCardIndex].front)}
@@ -158,12 +158,12 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
 const StatisticsComponent = ({ stats, onReplay, onReturnHome }: { stats: DeckStats, onReplay: () => void, onReturnHome: () => void }) => (
   <Card className="w-full max-w-2xl mx-auto dark:bg-customDark dark:text-white">
     <CardHeader>
-      <CardTitle className="text-3xl font-bold text-center">Статистика</CardTitle>
+      <CardTitle className="text-3xl font-extrabold text-center">Статистика</CardTitle>
     </CardHeader>
-    <CardContent className="space-y-6">
-      <p className="text-2xl text-center">Правильные ответы: {stats.correct}</p>
-      <p className="text-2xl text-center">Неправильные ответы: {stats.incorrect}</p>
-      <p className="text-2xl text-center">Осталось карточек: {stats.remaining}</p>
+    <CardContent>
+      <p className="text-sm text-center">Правильные ответы: {stats.correct}</p>
+      <p className="text-sm text-center">Неправильные ответы: {stats.incorrect}</p>
+      <p className="text-sm text-center">Осталось карточек: {stats.remaining}</p>
     </CardContent>
     <CardFooter className="flex flex-col space-y-4">
       <Button onClick={onReplay} size="lg" className="w-full text-xl">
@@ -187,7 +187,7 @@ const DeckList = ({ decks, onSelectDeck, onDeleteDeck }: { decks: DeckData[], on
       >
         <Card className="dark:bg-customDark dark:text-white">
           <CardHeader>
-            <CardTitle>{deck.name}</CardTitle>
+            <CardTitle className='truncate'>{deck.name}</CardTitle>
           </CardHeader>
           <CardContent>
             <p>{deck.cards.length} карточек</p>
@@ -205,7 +205,6 @@ const DeckList = ({ decks, onSelectDeck, onDeleteDeck }: { decks: DeckData[], on
     ))}
   </div>
 )
-
 export function AnkiClone() {
   const [decks, setDecks] = useState<DeckData[]>([])
   const [currentDeck, setCurrentDeck] = useState<DeckData | null>(null)
@@ -306,7 +305,7 @@ export function AnkiClone() {
     
     <div className="min-h-screen flex flex-col bg-white dark:bg-customDark transition-colors duration-200">
       <header className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <Link href="#" onClick={handleReturnHome} className="text-4xl font-bold text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+        <Link href="#" onClick={handleReturnHome} className="text-4xl font-black text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
           cypress
         </Link>
         <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white">
