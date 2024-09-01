@@ -9,6 +9,7 @@ import Confetti from 'react-confetti'
 import { Moon, Sun, Check, ArrowRight, X, Upload, Trash2, Home } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import Component from './Globe'
 
 type CardData = {
   front: string[]
@@ -39,7 +40,7 @@ const CSVUpload = ({ onDeckCreated }: { onDeckCreated: (deck: DeckData) => void 
           const [front, back] = line.split(',').map(part => part.trim())
           return { 
             front: front.split(';').map(f => f.trim()), 
-            back: back // Теперь back - это одно слово
+            back: back
           }
         }).filter(card => card.front.length > 0 && card.back)
         const deckName = file.name.replace('.csv', '')
@@ -50,9 +51,9 @@ const CSVUpload = ({ onDeckCreated }: { onDeckCreated: (deck: DeckData) => void 
   }
 
   return (
-    <div className="space-y-2 w-full max-w-xs mx-auto">
+    <div className="space-y-2 w-full max-w-72 mx-auto">
       <Label htmlFor="csv-upload" className="text-lg block text-center">Загрузка CSV файла</Label>
-      <Input id="csv-upload" type="file" accept=".csv" onChange={handleFileUpload} className="dark:bg-gray-800 dark:text-white" />
+      <Input id="csv-upload" type="file" accept=".csv" onChange={handleFileUpload} className="dark:bg-white dark:text-customDark" />
     </div>
   )
 }
@@ -114,7 +115,7 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto dark:bg-gray-800 dark:text-white">
+    <Card className="w-full max-w-md mx-auto dark:bg-customDark dark:text-white">
       <CardHeader className="text-center">
         <CardTitle className="text-xl">Карта {currentCardIndex + 1} из {shuffledDeck.length}</CardTitle>
       </CardHeader>
@@ -125,7 +126,7 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
           onChange={(e) => setUserAnswer(e.target.value)}
           placeholder="Введите перевод"
           disabled={isAnswerChecked}
-          className="text-lg dark:bg-gray-700 dark:text-white"
+          className="text-lg dark:bg-customDark dark:text-white"
         />
         {message && (
           <div className={`text-lg text-center font-semibold ${message === 'Правильно!' ? 'text-green-500' : 'text-red-500'}`}>
@@ -156,7 +157,7 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
 }
 
 const StatisticsComponent = ({ stats, onReplay, onReturnHome }: { stats: DeckStats, onReplay: () => void, onReturnHome: () => void }) => (
-  <Card className="w-full max-w-2xl mx-auto dark:bg-gray-800 dark:text-white">
+  <Card className="w-full max-w-2xl mx-auto dark:bg-customDark dark:text-white">
     <CardHeader>
       <CardTitle className="text-3xl font-bold text-center">Статистика</CardTitle>
     </CardHeader>
@@ -185,7 +186,7 @@ const DeckList = ({ decks, onSelectDeck, onDeleteDeck }: { decks: DeckData[], on
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="dark:bg-gray-800 dark:text-white">
+        <Card className="dark:bg-customDark dark:text-white">
           <CardHeader>
             <CardTitle>{deck.name}</CardTitle>
           </CardHeader>
@@ -303,25 +304,22 @@ export function AnkiClone() {
   }
 
   return (
+    
     <div className="min-h-screen flex flex-col bg-white dark:bg-customDark transition-colors duration-200">
       <header className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <Link href="#" onClick={handleReturnHome} className="text-4xl font-bold text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+        <Link href="#" onClick={handleReturnHome} className="text-4xl font-bold text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
           cypress
         </Link>
         <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white">
           {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
         </Button>
       </header>
+
       <main className="flex-grow flex flex-col items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-7xl mx-auto space-y-8"
-        >
+      {/* <Component /> */}
           {!currentDeck ? (
             <>
-              <h1 className="text-5xl font-bold text-center mb-12 text-black dark:text-white">Мои колоды</h1>
+              {/* <h1 className="text-5xl font-bold text-center mb-12 text-black dark:text-white">Мои колоды</h1> */}
               <DeckList decks={decks} onSelectDeck={handleSelectDeck} onDeleteDeck={handleDeleteDeck} />
               <div className="mt-12">
                 <CSVUpload onDeckCreated={handleDeckCreated} />
@@ -332,7 +330,6 @@ export function AnkiClone() {
           ) : (
             <DeckComponent deck={currentDeck.cards} onComplete={handleDeckComplete} />
           )}
-        </motion.div>
       </main>
       {showConfetti && <Confetti />}
     </div>
