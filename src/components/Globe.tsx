@@ -6,8 +6,8 @@ import { Points, PointMaterial, Line } from '@react-three/drei'
 import * as THREE from 'three'
 
 function Globe() {
-  const points = useRef()
-  const lines = useRef()
+  const points = useRef<THREE.Points>(null)
+  const lines = useRef<THREE.LineSegments>(null)
 
   const particlesData = useMemo(() => {
     const particleCount = 20000
@@ -15,8 +15,7 @@ function Globe() {
     const colors = new Float32Array(particleCount * 3)
     const radius = 3.5
 
-    const linePositions = []
-    
+    const linePositions: number[] = []
 
     for (let i = 0; i < particleCount; i++) {
       const theta = THREE.MathUtils.randFloatSpread(390)
@@ -29,7 +28,7 @@ function Globe() {
       positions.set([x, y, z], i * 3)
       colors.set([9, 1, 0], i * 3) 
 
-      linePositions.push([0, 0, 0], [x, y, z])
+      linePositions.push(0, 0, 0, x, y, z)
     }
 
     return { positions, colors, linePositions}
@@ -38,9 +37,14 @@ function Globe() {
   useFrame((state, delta) => {
     if (points.current) {
       points.current.rotation.y += delta * 0.05
+    }
+    if (lines.current) {
       lines.current.rotation.y += delta * 0.05
-      
-      const colors = points.current.geometry.attributes.color.array
+    }
+    
+    const pointsGeometry = points.current?.geometry
+    if (pointsGeometry) {
+      const colors = pointsGeometry.attributes.color.array as Float32Array
       
       for (let i = 0; i < colors.length; i += 3) {
         const twinkle = Math.sin(state.clock.elapsedTime * 5 + i) * 0.5 + 0.5
@@ -49,12 +53,12 @@ function Globe() {
         colors[i + 2] = twinkle * 0.3 // Blue
       }
       
-      points.current.geometry.attributes.color.needsUpdate = true
+      pointsGeometry.attributes.color.needsUpdate = true
     }
   })
 
   return (
-<>
+    <>
       <Points ref={points} positions={particlesData.positions} colors={particlesData.colors} stride={3} frustumCulled={false}>
         <PointMaterial
           transparent
