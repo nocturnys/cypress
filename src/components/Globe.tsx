@@ -1,83 +1,68 @@
 'use client'
 
-import React, { useRef, useMemo } from 'react'
+import React, { useRef, useMemo, useCallback } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Points, PointMaterial, Line } from '@react-three/drei'
+import { Points, PointMaterial } from '@react-three/drei'
 import * as THREE from 'three'
+
+const PARTICLE_COUNT = 20000
+const RADIUS = 3.14
+const ROTATION_SPEED = 0.05
+const TWINKLE_SPEED = 5
 
 function Globe() {
   const points = useRef<THREE.Points>(null)
-  const lines = useRef<any>(null)  // Changed to 'any' for now
 
-  const particlesData = useMemo(() => {
-    const particleCount = 20000
-    const positions = new Float32Array(particleCount * 3)
-    const colors = new Float32Array(particleCount * 3)
-    const radius = 3.14
+  const { positions, colors } = useMemo(() => {
+    const positions = new Float32Array(PARTICLE_COUNT * 3)
+    const colors = new Float32Array(PARTICLE_COUNT * 3)
 
-    const linePositions: number[] = []
-
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
       const theta = THREE.MathUtils.randFloatSpread(360)
       const phi = THREE.MathUtils.randFloatSpread(360)
 
-      const x = radius * Math.sin(theta) * Math.cos(phi)
-      const y = radius * Math.sin(theta) * Math.sin(phi)
-      const z = radius * Math.cos(theta)
+      const x = RADIUS * Math.sin(theta) * Math.cos(phi)
+      const y = RADIUS * Math.sin(theta) * Math.sin(phi)
+      const z = RADIUS * Math.cos(theta)
 
       positions.set([x, y, z], i * 2)
-      colors.set([9, 1, 0], i * 3) 
-
-      linePositions.push(0, 0, 0, x, y, z)
+      colors.set([1, 0, 0], i * 3) 
     }
 
-    return { positions, colors, linePositions}
+    return { positions, colors }
+  }, [])
+
+  const updateColors = useCallback((elapsedTime: number) => {
+    if (!points.current) return
+    const colors = points.current.geometry.attributes.color.array as Float32Array
+    
+    for (let i = 0; i < colors.length; i += 3) {
+      const twinkle = Math.sin(elapsedTime * TWINKLE_SPEED + i) * 0.5 + 0.5
+      colors[i + 1] = twinkle * 0.3 // Green
+      colors[i + 2] = twinkle * 0.3 // Blue
+    }
+    
+    points.current.geometry.attributes.color.needsUpdate = true
   }, [])
 
   useFrame((state, delta) => {
     if (points.current) {
-      points.current.rotation.y += delta * 0.05
-    }
-    if (lines.current) {
-      lines.current.rotation.y += delta * 0.05
-    }
-    
-    const pointsGeometry = points.current?.geometry
-    if (pointsGeometry) {
-      const colors = pointsGeometry.attributes.color.array as Float32Array
-      
-      for (let i = 0; i < colors.length; i += 3) {
-        const twinkle = Math.sin(state.clock.elapsedTime * 5 + i) * 0.5 + 0.5
-        colors[i] = 1 // Red
-        colors[i + 1] = twinkle * 0.3 // Green
-        colors[i + 2] = twinkle * 0.3 // Blue
-      }
-      
-      pointsGeometry.attributes.color.needsUpdate = true
+      points.current.rotation.y += delta * ROTATION_SPEED
+      updateColors(state.clock.elapsedTime)
     }
   })
 
   return (
-    <>
-      <Points ref={points} positions={particlesData.positions} colors={particlesData.colors} stride={3} frustumCulled={false}>
-        <PointMaterial
-          transparent
-          vertexColors
-          size={0.01}
-          sizeAttenuation={true}
-          depthWrite={true}
-          blending={THREE.AdditiveBlending}
-        />
-      </Points>
-      <Line
-        ref={lines}
-        points={particlesData.linePositions}
-        color="red"
-        lineWidth={0.01}
+    <Points ref={points} positions={positions} colors={colors} stride={3} frustumCulled={false}>
+      <PointMaterial
         transparent
-        opacity={0.2}
+        vertexColors
+        size={0.01}
+        sizeAttenuation={true}
+        depthWrite={true}
+        blending={THREE.AdditiveBlending}
       />
-    </>
+    </Points>
   )
 }
 

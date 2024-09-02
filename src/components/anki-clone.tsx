@@ -323,7 +323,7 @@ export function AnkiClone() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <header className="p-6 flex justify-between items-center max-w-3xl mx-auto w-full">
           <Link href="#" onClick={handleReturnHome} className="tracking-tight text-4xl font-black text-white dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-            <span className='align-top text-2xl'>cy</span>press
+            <span className='align-top text-3xl italic'>cy</span>press
           </Link>
           <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white ">
             {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6 text-white" />}
