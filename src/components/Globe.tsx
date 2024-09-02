@@ -25,7 +25,7 @@ function Globe() {
       const y = radius * Math.sin(theta) * Math.sin(phi)
       const z = radius * Math.cos(theta)
 
-      positions.set([x, y, z], i * 3)
+      positions.set([x, y, z], i * 2)
       colors.set([9, 1, 0], i * 3) 
 
       linePositions.push(0, 0, 0, x, y, z)
@@ -65,7 +65,7 @@ function Globe() {
           vertexColors
           size={0.01}
           sizeAttenuation={true}
-          depthWrite={false}
+          depthWrite={true}
           blending={THREE.AdditiveBlending}
         />
       </Points>
