@@ -7,7 +7,7 @@ import * as THREE from 'three'
 
 function Globe() {
   const points = useRef<THREE.Points>(null)
-  const lines = useRef<THREE.LineSegments>(null)
+  const lines = useRef<any>(null)  // Changed to 'any' for now
 
   const particlesData = useMemo(() => {
     const particleCount = 20000
