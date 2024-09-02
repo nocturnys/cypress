@@ -316,17 +316,17 @@ export function AnkiClone() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-customDark transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-customDark dark:bg-customDark transition-colors duration-200">
       <div className="absolute inset-0 z-0">
         <Component />
       </div>
       <div className="relative z-10 flex flex-col min-h-screen">
         <header className="p-6 flex justify-between items-center max-w-3xl mx-auto w-full">
-          <Link href="#" onClick={handleReturnHome} className="tracking-tight text-4xl font-black text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+          <Link href="#" onClick={handleReturnHome} className="tracking-tight text-4xl font-black text-white dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
             <span className='align-top text-2xl'>cy</span>press
           </Link>
-          <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white">
-            {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+          <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white ">
+            {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6 text-white" />}
           </Button>
         </header>
 
@@ -334,7 +334,7 @@ export function AnkiClone() {
           {!currentDeck ? (
             <>
               <DeckList decks={decks} onSelectDeck={handleSelectDeck} onDeleteDeck={handleDeleteDeck} />
-              <div className="mt-12">
+              <div className="mt-12 text-white">
                 <CSVUpload onDeckCreated={handleDeckCreated} />
               </div>
             </>
