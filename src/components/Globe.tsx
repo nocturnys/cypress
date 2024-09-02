@@ -9,11 +9,13 @@ const PARTICLE_COUNT = 20000
 const RADIUS = 3.14
 const ROTATION_SPEED = 0.01
 const TWINKLE_SPEED = 5
-const FOG_COLOR = new THREE.Color(0.5, 0, 0)  // Красный цвет тумана
+const FOG_COLOR = new THREE.Color(0.5, 0, 0)  // Red fog color
+const FOG_NEAR = 2
+const FOG_FAR = 6
 
 function Globe() {
   const points = useRef<THREE.Points>(null)
-  const fogRef = useRef<THREE.Fog>(null)
+  const fogRef = useRef<THREE.Fog | null>(null)
   const { scene } = useThree()
 
   const { positions, colors } = useMemo(() => {
@@ -62,9 +64,9 @@ function Globe() {
     updateFog(state.clock.elapsedTime)
   })
 
-  // Создаем и добавляем туман в сцену
+  // Create and add fog to the scene
   React.useEffect(() => {
-    const fog = new THREE.Fog(FOG_COLOR, 2, 6)
+    const fog = new THREE.Fog(FOG_COLOR, FOG_NEAR, FOG_FAR)
     fogRef.current = fog
     scene.fog = fog
 
@@ -90,7 +92,7 @@ function Globe() {
 export default function Component() {
   return (
     <div className="w-full h-full">
-      <Canvas camera={{ position: [0, 0, 3], fov: 60 }}>
+      <Canvas camera={{ position: [0, 0, 4], fov: 60 }}>
         <ambientLight intensity={0.2} />
         <Globe />
       </Canvas>
