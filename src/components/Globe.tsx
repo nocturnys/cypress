@@ -13,12 +13,12 @@ function Globe() {
     const particleCount = 20000
     const positions = new Float32Array(particleCount * 3)
     const colors = new Float32Array(particleCount * 3)
-    const radius = 3.5
+    const radius = 3.14
 
     const linePositions: number[] = []
 
     for (let i = 0; i < particleCount; i++) {
-      const theta = THREE.MathUtils.randFloatSpread(390)
+      const theta = THREE.MathUtils.randFloatSpread(360)
       const phi = THREE.MathUtils.randFloatSpread(360)
 
       const x = radius * Math.sin(theta) * Math.cos(phi)
@@ -63,7 +63,7 @@ function Globe() {
         <PointMaterial
           transparent
           vertexColors
-          size={0.03}
+          size={0.01}
           sizeAttenuation={true}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
@@ -84,7 +84,7 @@ function Globe() {
 export default function Component() {
   return (
     <div className="w-full h-full">
-      <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
+      <Canvas camera={{ position: [0, 0, 3], fov: 60 }}>
         <ambientLight intensity={0.2} />
         <Globe />
       </Canvas>
