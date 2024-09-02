@@ -1,17 +1,20 @@
 'use client'
 
 import React, { useRef, useMemo, useCallback } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Points, PointMaterial } from '@react-three/drei'
 import * as THREE from 'three'
 
 const PARTICLE_COUNT = 20000
 const RADIUS = 3.14
-const ROTATION_SPEED = 0.05
+const ROTATION_SPEED = 0.01
 const TWINKLE_SPEED = 5
+const FOG_COLOR = new THREE.Color(0.5, 0, 0)  // Красный цвет тумана
 
 function Globe() {
   const points = useRef<THREE.Points>(null)
+  const fogRef = useRef<THREE.Fog>(null)
+  const { scene } = useThree()
 
   const { positions, colors } = useMemo(() => {
     const positions = new Float32Array(PARTICLE_COUNT * 3)
@@ -45,12 +48,30 @@ function Globe() {
     points.current.geometry.attributes.color.needsUpdate = true
   }, [])
 
+  const updateFog = useCallback((elapsedTime: number) => {
+    if (!fogRef.current) return
+    const intensity = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5
+    fogRef.current.color.setRGB(FOG_COLOR.r * intensity, FOG_COLOR.g * intensity, FOG_COLOR.b * intensity)
+  }, [])
+
   useFrame((state, delta) => {
     if (points.current) {
       points.current.rotation.y += delta * ROTATION_SPEED
       updateColors(state.clock.elapsedTime)
     }
+    updateFog(state.clock.elapsedTime)
   })
+
+  // Создаем и добавляем туман в сцену
+  React.useEffect(() => {
+    const fog = new THREE.Fog(FOG_COLOR, 2, 6)
+    fogRef.current = fog
+    scene.fog = fog
+
+    return () => {
+      scene.fog = null
+    }
+  }, [scene])
 
   return (
     <Points ref={points} positions={positions} colors={colors} stride={3} frustumCulled={false}>
