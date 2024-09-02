@@ -1,13 +1,17 @@
-'use client';
+'use client'
 
-import { AnkiClone } from '@/components/anki-clone';
+import { AnkiClone } from '@/components/anki-clone'
+import Component from '@/components/Globe'
 
 export default function Page() {
   return (
-<main className="flex h-screen flex-col items-center justify-center bg-white dark:bg-customDark transition-colors duration-200">
-  <section className="w-full">
-      <AnkiClone />
-  </section>
-</main>
-  );
+    <main className="relative flex h-screen flex-col items-center justify-center bg-white dark:bg-customDark transition-colors duration-200 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Component />
+      </div>
+      <div className="relative z-90 w-full h-full">
+        <AnkiClone />
+      </div>
+    </main>
+  )
 }

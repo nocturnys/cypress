@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import Confetti from 'react-confetti'
+// import Confetti from 'react-confetti'
 import { Moon, Sun, Check, ArrowRight, X, Upload, Trash2, Home } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import Component from './Globe'
 
 type CardData = {
   front: string[]
@@ -91,6 +92,16 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
   const handleFinishEarly = () => {
     onComplete(stats)
   }
+  
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      if (!isAnswerChecked) {
+        handleSubmit();
+      } else {
+        handleNext();
+      }
+    }
+  };
 
   const renderFrontSide = (front: string[]) => {
     if (front.length === 1) {
@@ -123,6 +134,7 @@ const DeckComponent = ({ deck, onComplete }: { deck: CardData[], onComplete: (st
         <Input
           value={userAnswer}
           onChange={(e) => setUserAnswer(e.target.value)}
+         
           placeholder="Введите перевод"
           disabled={isAnswerChecked}
           className="text-lg dark:bg-customDark dark:text-white"
@@ -160,10 +172,12 @@ const StatisticsComponent = ({ stats, onReplay, onReturnHome }: { stats: DeckSta
     <CardHeader>
       <CardTitle className="text-3xl font-extrabold text-center">Статистика</CardTitle>
     </CardHeader>
-    <CardContent >
-      <p className="text-sm text-center">Правильные ответы: {stats.correct}</p>
-      <p className="text-sm text-center">Неправильные ответы: {stats.incorrect}</p>
-      <p className="text-sm text-center">Осталось карточек: {stats.remaining}</p>
+    <CardContent className="flex flex-col items-center">
+      <div className="text-left">
+        <p className="text-sm">Правильные ответы: {stats.correct}</p>
+        <p className="text-sm">Неправильные ответы: {stats.incorrect}</p>
+        <p className="text-sm">Осталось карточек: {stats.remaining}</p>
+      </div>
     </CardContent>
     <CardFooter className="flex flex-col space-y-4">
       <Button onClick={onReplay} size="lg" className="w-full text-base">
@@ -177,7 +191,7 @@ const StatisticsComponent = ({ stats, onReplay, onReturnHome }: { stats: DeckSta
 )
 
 const DeckList = ({ decks, onSelectDeck, onDeleteDeck }: { decks: DeckData[], onSelectDeck: (deck: DeckData) => void, onDeleteDeck: (id: string) => void }) => (
-  <div className={`grid gap-4 ${decks.length === 1 ? 'justify-center' : ''} ${decks.length > 1 ? 'sm:grid-cols-2' : ''} ${decks.length > 2 ? 'lg:grid-cols-3' : ''}`}>
+  <div className={`grid gap-4 z-50 ${decks.length === 1 ? 'justify-center z-50' : ''} ${decks.length > 1 ? 'sm:grid-cols-2 z-50' : ''} ${decks.length > 2 ? 'lg:grid-cols-3 z-50' : ''}`}>
     {decks.map((deck) => (
       <motion.div
         key={deck.id}
@@ -185,18 +199,18 @@ const DeckList = ({ decks, onSelectDeck, onDeleteDeck }: { decks: DeckData[], on
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="dark:bg-customDark dark:text-white">
+        <Card className="dark:bg-customDark dark:text-white z-50">
           <CardHeader>
-            <CardTitle className='truncate'>{deck.name}</CardTitle>
+            <CardTitle className='truncate z-50'>{deck.name}</CardTitle>
           </CardHeader>
           <CardContent>
             <p>{deck.cards.length} карточек</p>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button onClick={() => onSelectDeck(deck)} className="flex-1 mr-2">
+          <CardFooter className="flex justify-between z-50">
+            <Button onClick={() => onSelectDeck(deck)} className="flex-1 mr-2 z-50">
               Начать
             </Button>
-            <Button onClick={() => onDeleteDeck(deck.id)} variant="destructive" className="flex-shrink-0">
+            <Button onClick={() => onDeleteDeck(deck.id)} variant="destructive" className="flex-shrink-0 z-50">
               <Trash2 className="h-4 w-4" />
             </Button>
           </CardFooter>
@@ -302,21 +316,23 @@ export function AnkiClone() {
   }
 
   return (
-    
     <div className="min-h-screen flex flex-col bg-white dark:bg-customDark transition-colors duration-200">
-      <header className="p-6 flex justify-between items-center max-w-3xl mx-auto w-full">
-        <Link href="#" onClick={handleReturnHome} className="tracking-tight text-4xl font-black text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-          <span className='align-top text-2xl'>cy</span>press
-        </Link>
-        <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white">
-          {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
-        </Button>
-      </header>
+      <div className="absolute inset-0 z-0">
+        <Component />
+      </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <header className="p-6 flex justify-between items-center max-w-3xl mx-auto w-full">
+          <Link href="#" onClick={handleReturnHome} className="tracking-tight text-4xl font-black text-customDark dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+            <span className='align-top text-2xl'>cy</span>press
+          </Link>
+          <Button onClick={toggleDarkMode} variant="ghost" size="lg" className="dark:text-white">
+            {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+          </Button>
+        </header>
 
-      <main className="flex-grow flex flex-col items-center justify-center p-6">
+        <main className="flex-grow flex flex-col items-center justify-center p-6">
           {!currentDeck ? (
             <>
-              {/* <h1 className="text-5xl font-bold text-center mb-12 text-black dark:text-white">Мои колоды</h1> */}
               <DeckList decks={decks} onSelectDeck={handleSelectDeck} onDeleteDeck={handleDeleteDeck} />
               <div className="mt-12">
                 <CSVUpload onDeckCreated={handleDeckCreated} />
@@ -327,8 +343,9 @@ export function AnkiClone() {
           ) : (
             <DeckComponent deck={currentDeck.cards} onComplete={handleDeckComplete} />
           )}
-      </main>
-      {showConfetti && <Confetti />}
+        </main>
+      </div>
+      {/* {showConfetti && <Confetti />} */}
     </div>
   )
 }
