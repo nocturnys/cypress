@@ -1,7 +1,7 @@
 'use client'
 
 import { AnkiClone } from '@/components/cypress'
-import Component from '@/components/Globe'
+import Component from '@/components/globe'
 
 export default function Page() {
   return (

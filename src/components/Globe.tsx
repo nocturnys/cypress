@@ -8,12 +8,12 @@ import * as THREE from 'three'
 const PARTICLE_COUNT = 20000
 const RADIUS = 5.14
 const ROTATION_SPEED = 0.02
-const TWINKLE_SPEED = 5
+const TWINKLE_SPEED = 50
 const FOG_COLOR = new THREE.Color(0.5, 0, 0.3)
 const FOG_NEAR = 2
 const FOG_FAR = 6
-const MOUSE_INFLUENCE = 0.1
-const RETURN_SPEED = 0.05
+const MOUSE_INFLUENCE = 0.007
+const RETURN_SPEED = 0.01
 
 function Globe() {
   const points = useRef<THREE.Points>(null)
